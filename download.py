@@ -28,6 +28,15 @@ except ImportError:
     tqdm = None
     print('Install tqdm (pip install tqdm) for a fancy progressbar with estimated remaining time - falling back to basic progressbar')
 
+parser = argparse.ArgumentParser(description='Download the KaoKore Dataset.')
+parser.add_argument('--dir', type=str, help='Directory in which the downloaded dataset is stored', default='kaokore')
+parser.add_argument('--dataset_version', type=str, help='The version of dataset', default='1.0', choices=['1.0', '1.1', '1.2'])
+parser.add_argument('--force', help='Force redownloading of already downloaded images', action='store_true')
+parser.add_argument('--threads', type=int, help='Number of simultaneous threads to use for downloading', default=16)
+parser.add_argument('--ssl_unverified_context', help='Force to use unverified context for SSL', action='store_true')
+args = parser.parse_args()
+images_dir = join(args.dir, 'images_256')
+
 # ssl._create_default_https_context = ssl._create_unverified_context  # dirty fix
 script_dir = dirname(realpath(__file__))
 
@@ -73,14 +82,6 @@ def download_and_check_image(iurl):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Download the KaoKore Dataset.')
-    parser.add_argument('--dir', type=str, help='Directory in which the downloaded dataset is stored', default='kaokore')
-    parser.add_argument('--dataset_version', type=str, help='The version of dataset', default='1.0', choices=['1.0', '1.1', '1.2'])
-    parser.add_argument('--force', help='Force redownloading of already downloaded images', action='store_true')
-    parser.add_argument('--threads', type=int, help='Number of simultaneous threads to use for downloading', default=16)
-    parser.add_argument('--ssl_unverified_context', help='Force to use unverified context for SSL', action='store_true')
-    args = parser.parse_args()
-
     if args.ssl_unverified_context:
         print('[WARN] Use unverified context for SSL as requested. Use at your own risk')
         ssl._create_default_https_context = ssl._create_unverified_context
@@ -96,7 +97,6 @@ if __name__ == '__main__':
 
     print('Downloading Kaokore version {}, saving to {}'.format(args.dataset_version, args.dir))
     print('Downloading {} images using {} threads'.format(len(iurls), args.threads))
-    images_dir = join(args.dir, 'images_256')
     os.makedirs(images_dir, exist_ok=True)
 
     pool = multiprocessing.Pool(args.threads)
